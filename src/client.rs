@@ -47,12 +47,7 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// use hdrs::Client;
-    ///
-    /// let fs = Client::connect("default");
-    /// ```
-    pub fn connect(name_node: &str) -> io::Result<Self> {
+    pub fn connect(name_node: &str, user: &str, ticket_path: &str) -> io::Result<Self> {
         prepare_env()?;
 
         set_errno(Errno(0));
@@ -61,7 +56,13 @@ impl Client {
 
         let fs = unsafe {
             let name_node = CString::new(name_node)?;
-            hdfsConnect(name_node.as_ptr(), 0)
+            let user = CString::new(user)?;
+            let ticket_path = CString::new(ticket_path)?;
+            let hdfs_builder = hdfsNewBuilder();
+            hdfsBuilderSetNameNode(hdfs_builder, name_node.as_ptr());
+            hdfsBuilderSetUserName(hdfs_builder, user.as_ptr());
+            hdfsBuilderSetKerbTicketCachePath(hdfs_builder, ticket_path.as_ptr());
+            hdfsBuilderConnect(hdfs_builder)
         };
 
         if fs.is_null() {
