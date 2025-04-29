@@ -3,7 +3,7 @@ use std::ptr;
 
 use hdfs_sys::*;
 use libc::c_void;
-use log::debug;
+use log::{debug, error};
 
 use crate::Client;
 
@@ -155,6 +155,8 @@ impl Write for File {
         };
 
         if n == -1 {
+            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+            error!("Errors on writing. error: {:?}", root_cause);
             return Err(Error::last_os_error());
         }
 
@@ -165,6 +167,8 @@ impl Write for File {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
+            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+            error!("Errors on flushing. error: {:?}", root_cause);
             return Err(Error::last_os_error());
         }
 
@@ -224,6 +228,8 @@ impl Write for &File {
         };
 
         if n == -1 {
+            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+            error!("Errors on writing. error: {:?}", root_cause);
             return Err(Error::last_os_error());
         }
 
@@ -234,6 +240,8 @@ impl Write for &File {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
+            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+            error!("Errors on flushing. error: {:?}", root_cause);
             return Err(Error::last_os_error());
         }
 
