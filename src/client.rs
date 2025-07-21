@@ -5,7 +5,7 @@ use std::mem::MaybeUninit;
 
 use errno::{set_errno, Errno};
 use hdfs_sys::*;
-use log::debug;
+use log::{debug, error};
 
 use crate::metadata::Metadata;
 use crate::{OpenOptions, Readdir};
@@ -492,6 +492,8 @@ impl Client {
         };
 
         if n == -1 {
+            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+            error!("Errors on creating dir. error: {:?}", root_cause);
             return Err(io::Error::last_os_error());
         }
 
