@@ -3,7 +3,7 @@ use std::ptr;
 
 use hdfs_sys::*;
 use libc::c_void;
-use log::{debug, error};
+use log::{debug, error, warn};
 
 use crate::Client;
 
@@ -155,8 +155,7 @@ impl Write for File {
         };
 
         if n == -1 {
-            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
-            error!("Errors on writing. error: {:?}", root_cause);
+            error!("Errors on writing. error: {:?}", last_hdfs_error());
             return Err(Error::last_os_error());
         }
 
@@ -167,8 +166,7 @@ impl Write for File {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
-            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
-            error!("Errors on flushing. error: {:?}", root_cause);
+            error!("Errors on flushing. error: {:?}", last_hdfs_error());
             return Err(Error::last_os_error());
         }
 
@@ -216,6 +214,20 @@ impl Seek for &File {
     }
 }
 
+pub fn last_hdfs_error() -> String {
+    let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
+    if root_cause.is_null() {
+        warn!("hdfsGetLastExceptionRootCause returned null");
+        "unknown error".to_string()
+    } else {
+        unsafe {
+            std::ffi::CStr::from_ptr(root_cause)
+                .to_string_lossy()
+                .into_owned()
+        }
+    }
+}
+
 impl Write for &File {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let n = unsafe {
@@ -228,8 +240,7 @@ impl Write for &File {
         };
 
         if n == -1 {
-            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
-            error!("Errors on writing. error: {:?}", root_cause);
+            error!("Errors on writing. error: {:?}", last_hdfs_error());
             return Err(Error::last_os_error());
         }
 
@@ -240,8 +251,7 @@ impl Write for &File {
         let n = unsafe { hdfsFlush(self.fs, self.f) };
 
         if n == -1 {
-            let root_cause = unsafe { hdfsGetLastExceptionRootCause() };
-            error!("Errors on flushing. error: {:?}", root_cause);
+            error!("Errors on flushing. error: {:?}", last_hdfs_error());
             return Err(Error::last_os_error());
         }
 
