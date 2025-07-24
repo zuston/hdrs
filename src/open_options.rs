@@ -2,8 +2,9 @@ use std::ffi::{c_int, c_short, CString};
 use std::io::{Error, ErrorKind, Result};
 
 use hdfs_sys::*;
-use log::debug;
+use log::{debug, error};
 
+use crate::file::last_hdfs_error;
 use crate::File;
 
 /// Options and flags which can be used to configure how a file is opened.
@@ -403,6 +404,7 @@ impl OpenOptions {
         };
 
         if b.is_null() {
+            error!("Errors on opening. error: {:?}", last_hdfs_error());
             return Err(Error::last_os_error());
         }
 
