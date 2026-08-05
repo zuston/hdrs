@@ -80,6 +80,7 @@ fn test_rename() -> Result<()> {
         let mut f = fs.open_file().create(true).write(true).open(&path)?;
         f.write_all(b"test file content")?;
         f.flush()?;
+        f.close()?;
     }
     let new_path = format!("{work_dir}{}", uuid::Uuid::new_v4());
     fs.rename_file(&path, &new_path)?;
@@ -136,6 +137,7 @@ fn test_file() -> Result<()> {
         // Flush file
         debug!("test file flush");
         f.flush()?;
+        f.close()?;
     }
 
     {

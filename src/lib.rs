@@ -16,6 +16,7 @@
 //!     .create(true)
 //!     .open("/tmp/hello.txt")?;
 //! let n = f.write("Hello, World!".as_bytes())?;
+//! f.close()?;
 //!
 //! let mut f = fs.open_file().read(true).open("/tmp/hello.txt")?;
 //! let mut buf = vec![0; 1024];
